@@ -2,6 +2,8 @@ import express from "express";
 import "dotenv/config";
 import mongoose from "mongoose";
 import UserRouter from "./routes/users.js";
+import CategoryRouter from "./routes/category.js";
+import BookRouter from "./routes/book.js";
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import passport from "passport";
@@ -16,6 +18,7 @@ mongoose
   .then(() => console.log("DB Connected!"))
   .catch((err) => console.log(`Err from connect db`));
 
+// middleware
 app.use(express.json());
 app.use(cookieParser());
 app.use(
@@ -34,7 +37,10 @@ app.use(passport.session());
 
 // My Route
 app.use("/users", UserRouter);
+app.use("/category", CategoryRouter);
+app.use("/book", BookRouter);
 
+//App
 app.listen(PORT, () => {
   console.log(`App is running at Port: ${PORT}`);
 });

@@ -1,5 +1,5 @@
 import express from "express";
-import UserController from "../controller/userController.js";
+import UserController from "../controller/UserController.js";
 import passport from "passport";
 import "../strategies/local-strategy.js";
 import AuthMiddleware from "../middleware/authMiddleware.js";

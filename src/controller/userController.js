@@ -1,6 +1,4 @@
-import { response } from "express";
 import { User } from "../database/User.js";
-import { get } from "mongoose";
 
 // Chưa validate req.body
 const createUser = async (req, res) => {

@@ -1,26 +1,25 @@
 import mongoose from "mongoose";
 
 // Review Schema
-const ReviewSchema = new Schema({
+const ReviewSchema = new mongoose.Schema({
   rating: Number,
   comment: String,
-  review_date: Date,
-  user_id: { type: Schema.Types.ObjectId, ref: "User" },
+  review_date: { type: Date, default: Date.now },
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 
 // Book Schema
-const BookSchema = new Schema({
-  title: String,
+const BookSchema = new mongoose.Schema({
+  title: { type: String, required: true },
   author: String,
-  price: Number,
+  price: { type: Number, required: true },
   publisher: String,
-  year_published: Number,
   description: String,
-  stock_quantity: Number,
+  stock_quantity: { type: Number, default: 0 },
   image: String,
-  category_id: { type: Schema.Types.ObjectId, ref: "Category" },
-  is_active: Boolean,
+  category_id: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+  is_active: { type: Boolean, default: true },
   reviews: [ReviewSchema], // Nhúng review vào book
 });
 
-module.exports = mongoose.model("Book", BookSchema);
+export const Book = mongoose.model("Book", BookSchema);
