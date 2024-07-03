@@ -1,0 +1,32 @@
+import express from "express";
+import UserController from "../controller/userController.js";
+import passport from "passport";
+import "../strategies/local-strategy.js";
+import AuthMiddleware from "../middleware/authMiddleware.js";
+
+const UserRouter = express.Router();
+
+// Đăng kí User
+UserRouter.post("/register", UserController.createUser);
+// Đăng nhập User
+UserRouter.post(
+  "/login",
+  passport.authenticate("local", { session: true }),
+  UserController.loginUser
+);
+// Create admin account (only for owner)
+UserRouter.post(
+  "/createAdmin",
+  AuthMiddleware.ensureAuthenticated,
+  AuthMiddleware.ensureRole("owner"),
+  UserController.createAdmin
+);
+
+// Check Cart
+UserRouter.get(
+  "/cart",
+  AuthMiddleware.ensureAuthenticated,
+  UserController.getListCart
+);
+
+export default UserRouter;
