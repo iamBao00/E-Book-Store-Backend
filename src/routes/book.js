@@ -8,5 +8,6 @@ BookRouter.post("/add", BookController.addBook);
 BookRouter.get("/get-all", BookController.getAllBooks);
 BookRouter.patch("/update/:id", BookController.updateBook);
 BookRouter.delete("/delete/:id", BookController.deleteBook);
+BookRouter.get("/getById/:id", BookController.getBookById);
 
 export default BookRouter;

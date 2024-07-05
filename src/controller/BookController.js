@@ -1,4 +1,5 @@
 import { Book } from "../database/Book.js";
+import { Category } from "../database/Category.js";
 
 const addBook = async (req, res) => {
   try {
@@ -97,6 +98,21 @@ const deleteBook = async (req, res) => {
   }
 };
 
+const getBookById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const book = await Book.findById(id);
+    if (!book) return res.status(400).send({ msg: "Book Id not found" });
+    else {
+      // Lấy tên loại
+      const category = await Category.findById(book.category_id);
+      console.log(category);
+      if (category) book.category_name = category.name;
+      res.status(200).send(book);
+    }
+  } catch (error) {}
+};
+
 // // Phương thức thêm review cho sách
 // const addReview = async (req, res) => {
 //   try {
@@ -175,6 +191,7 @@ const BookController = {
   getAllBooks,
   updateBook,
   deleteBook,
+  getBookById,
   //   addReview,
   //   updateReview,
   //   deleteReview,

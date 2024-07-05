@@ -7,10 +7,13 @@ import BookRouter from "./routes/book.js";
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import passport from "passport";
+import cors from "cors";
 
 const PORT = process.env.PORT || 3001;
 
 const app = express();
+
+app.use(cors());
 
 // DB connect
 mongoose
