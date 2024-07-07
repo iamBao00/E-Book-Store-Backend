@@ -24,9 +24,9 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, default: "user" },
   phone: { type: String },
   avatar: { type: String },
-  address: [AddressSchema], // Nhúng address vào user
-  cart: [CartDetailSchema], // Nhúng cart vào user
-  wishlist: [WishListDetailSchema], // Nhúng wishlist vào user
+  address: [AddressSchema],
+  cart: [CartDetailSchema],
+  wishlist: [WishListDetailSchema],
 });
 
 UserSchema.pre("save", async function (next) {

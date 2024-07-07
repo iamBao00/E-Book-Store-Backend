@@ -38,7 +38,20 @@ const addBook = async (req, res) => {
 const getAllBooks = async (req, res) => {
   try {
     const books = await Book.find();
-    res.status(200).json(books);
+
+    const booksWithCategoryName = await Promise.all(
+      books.map(async (book) => {
+        const category = await Category.findById(book.category_id).select(
+          "name"
+        );
+        return {
+          ...book.toObject(),
+          category_name: category ? category.name : "Unknown",
+        };
+      })
+    );
+
+    res.status(200).json(booksWithCategoryName);
   } catch (error) {
     res.status(500).send({ msg: error.message });
   }
@@ -80,7 +93,7 @@ const updateBook = async (req, res) => {
       return res.status(404).send({ msg: "Book not found" });
     }
 
-    return res.status(200).send("Book updated successfully");
+    return res.status(200).send(updatedBook);
   } catch (error) {
     res.status(500).send({ msg: error.message });
   }
@@ -89,7 +102,8 @@ const updateBook = async (req, res) => {
 const deleteBook = async (req, res) => {
   try {
     const { id } = req.params;
-    const book = await Book.findOneAndDelete(id);
+    console.log(id);
+    const book = await Book.findOneAndDelete({ _id: id });
     console.log(book);
     if (!book) return res.status(400).send("BookId not found");
     return res.status(200).send("Book deleted successfully");
@@ -103,14 +117,23 @@ const getBookById = async (req, res) => {
     const { id } = req.params;
     const book = await Book.findById(id);
     if (!book) return res.status(400).send({ msg: "Book Id not found" });
-    else {
-      // Lấy tên loại
-      const category = await Category.findById(book.category_id);
-      console.log(category);
-      if (category) book.category_name = category.name;
+
+    // Lấy tên loại
+    const category = await Category.findById(book.category_id);
+
+    if (category) {
+      // Sao chép đối tượng book và thêm thuộc tính category_name
+      const bookWithCategoryName = {
+        ...book._doc, // ._doc để lấy dữ liệu thô của book
+        category_name: category.name,
+      };
+      res.status(200).send(bookWithCategoryName);
+    } else {
       res.status(200).send(book);
     }
-  } catch (error) {}
+  } catch (error) {
+    res.status(500).send({ msg: error.message });
+  }
 };
 
 // // Phương thức thêm review cho sách
