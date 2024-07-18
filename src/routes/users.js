@@ -14,6 +14,7 @@ UserRouter.post(
   passport.authenticate("local", { session: true }),
   UserController.loginUser
 );
+
 // Create admin account (only for owner)
 UserRouter.post(
   "/createAdmin",
@@ -27,6 +28,13 @@ UserRouter.get(
   "/cart",
   AuthMiddleware.ensureAuthenticated,
   UserController.getListCart
+);
+
+// Add book to cart
+UserRouter.patch(
+  "/add-to-cart",
+  AuthMiddleware.ensureAuthenticated,
+  UserController.addBookToCart
 );
 
 export default UserRouter;

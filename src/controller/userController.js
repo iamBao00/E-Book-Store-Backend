@@ -64,11 +64,44 @@ const loginUser = (req, res) => {
   });
 };
 
-// get List Cart of User (chưa làm)
+// get List Cart of User
 const getListCart = (req, res) => {
-  return res.send(`List Cart of User: ${req.user}`);
+  return res.status(200).send(req.user.cart);
 };
 
-const UserController = { createUser, loginUser, getListCart, createAdmin };
+// get List Cart of User
+const addBookToCart = async (req, res) => {
+  try {
+    const { bookId, quantity = 1 } = req.body;
+    const user = req.user;
+
+    // Check if the book already exists in the cart
+    const existingCartItem = user.cart.find(
+      (item) => String(item.book_id) === String(bookId)
+    );
+
+    if (existingCartItem) {
+      // Update quantity if the book already exists
+      existingCartItem.quantity += quantity;
+    } else {
+      // Add new item to cart if the book doesn't exist
+      user.cart.push({ book_id: bookId, quantity });
+    }
+
+    await user.save();
+
+    res.status(201).json({ message: "Book added to cart successfully", user });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const UserController = {
+  createUser,
+  loginUser,
+  getListCart,
+  createAdmin,
+  addBookToCart,
+};
 
 export default UserController;

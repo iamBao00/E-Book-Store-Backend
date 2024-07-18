@@ -13,10 +13,6 @@ const CartDetailSchema = new mongoose.Schema({
   book_id: { type: mongoose.Schema.Types.ObjectId, ref: "Book" },
 });
 
-const WishListDetailSchema = new mongoose.Schema({
-  book_id: { type: mongoose.Schema.Types.ObjectId, ref: "Book" },
-});
-
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
@@ -26,7 +22,6 @@ const UserSchema = new mongoose.Schema({
   avatar: { type: String },
   address: [AddressSchema],
   cart: [CartDetailSchema],
-  wishlist: [WishListDetailSchema],
 });
 
 UserSchema.pre("save", async function (next) {

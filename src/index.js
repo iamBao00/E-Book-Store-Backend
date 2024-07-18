@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3001;
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ credentials: true }));
 
 // DB connect
 mongoose
@@ -30,7 +30,7 @@ app.use(
     saveUninitialized: false,
     resave: false,
     cookie: {
-      maxAge: 6000 * 60,
+      maxAge: 1000 * 60 * 60 * 24,
     },
   })
 );
