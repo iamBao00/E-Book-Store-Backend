@@ -1,17 +1,22 @@
 import express from "express";
 import UserController from "../controller/UserController.js";
-import passport from "passport";
+
 import "../strategies/local-strategy.js";
 import AuthMiddleware from "../middleware/authMiddleware.js";
-
 const UserRouter = express.Router();
 
 // Đăng kí User
 UserRouter.post("/register", UserController.createUser);
+
 // Đăng nhập User
+// UserRouter.post(
+//   "/login",
+//   passport.authenticate("local", { session: true }),
+//   UserController.loginUser
+// );
 UserRouter.post(
   "/login",
-  passport.authenticate("local", { session: true }),
+  AuthMiddleware.loginMiddleware,
   UserController.loginUser
 );
 

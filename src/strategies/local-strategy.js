@@ -8,9 +8,9 @@ passport.use(
       console.log(`Username: ${username}`);
       console.log(`Password: ${password}`);
       const user = await User.findOne({ username });
-      if (!user) return done("Incorrect username", null);
+      if (!user) return done(null, false, { message: "Incorrect username" });
       const isValid = await user.comparePassword(password);
-      if (!isValid) return done("Incorrect password", null);
+      if (!isValid) return done(null, false, { message: "Incorrect password" });
 
       return done(null, user);
     } catch (error) {
