@@ -56,4 +56,18 @@ UserRouter.patch(
   UserController.addBookToCart
 );
 
+// Delete Item in Cart
+UserRouter.delete(
+  "/cart/delete/:bookId",
+  AuthMiddleware.ensureAuthenticated,
+  UserController.removeBookFromCart
+);
+
+// Update Quantity
+UserRouter.patch(
+  "/cart/quantity/:bookId",
+  AuthMiddleware.ensureAuthenticated,
+  UserController.updateQuantity
+);
+
 export default UserRouter;

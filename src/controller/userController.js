@@ -125,6 +125,73 @@ const addBookToCart = async (req, res) => {
   }
 };
 
+const removeBookFromCart = async (req, res) => {
+  try {
+    const userId = req.user._id; // Assuming req.user is set by the AuthMiddleware
+    const bookId = req.params.bookId;
+
+    // Find the user by their ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Remove the book from the cart
+    user.cart = user.cart.filter((item) => item.book_id.toString() !== bookId);
+
+    // Save the updated user document
+    await user.save();
+
+    return res.status(200).json({ message: "Book removed from cart" });
+  } catch (err) {
+    console.error("Error removing book from cart:", err);
+    return res.status(500).json({ message: err });
+  }
+};
+
+const updateQuantity = async (req, res) => {
+  const userId = req.user.id; // userId được lấy từ AuthMiddleware
+  const { bookId } = req.params;
+  const { quantity } = req.body;
+
+  try {
+    // Tìm user theo userId
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Tìm item trong giỏ hàng theo bookId
+    const cartItem = user.cart.find(
+      (item) => item.book_id.toString() === bookId
+    );
+
+    if (!cartItem) {
+      return res.status(404).json({ message: "Book not found in cart" });
+    }
+
+    // Nếu số lượng mới là 0, xóa item khỏi giỏ hàng
+    if (quantity === 0) {
+      user.cart = user.cart.filter(
+        (item) => item.book_id.toString() !== bookId
+      );
+    } else {
+      // Cập nhật số lượng mới
+      cartItem.quantity = quantity;
+    }
+
+    // Lưu lại thay đổi
+    await user.save();
+
+    res
+      .status(200)
+      .json({ message: "Cart updated successfully", cart: user.cart });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
 const UserController = {
   createUser,
   loginUser,
@@ -133,6 +200,8 @@ const UserController = {
   addBookToCart,
   checkAuth,
   checkAuthAdmin,
+  removeBookFromCart,
+  updateQuantity,
 };
 
 export default UserController;
