@@ -76,6 +76,23 @@ const checkAuth = (req, res) => {
   });
 };
 
+const checkAuthAdmin = (req, res) => {
+  if (req.user.role !== "admin")
+    return res
+      .status(400)
+      .json({ message: "You need admin account to access this resource" });
+  else
+    return res.status(200).json({
+      message: "Logged in",
+      user: {
+        _id: req.user.id,
+        email: req.user.email,
+        username: req.user.username,
+        role: req.user.role, // Trả về role của người dùng
+      },
+    });
+};
+
 // get List Cart of User
 const getListCart = (req, res) => {
   return res.status(200).send(req.user.cart);
@@ -115,6 +132,7 @@ const UserController = {
   createAdmin,
   addBookToCart,
   checkAuth,
+  checkAuthAdmin,
 };
 
 export default UserController;
