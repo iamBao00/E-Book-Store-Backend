@@ -64,6 +64,18 @@ const loginUser = (req, res) => {
   });
 };
 
+const checkAuth = (req, res) => {
+  res.status(200).json({
+    message: "Logged in",
+    user: {
+      _id: req.user.id,
+      email: req.user.email,
+      username: req.user.username,
+      role: req.user.role, // Trả về role của người dùng
+    },
+  });
+};
+
 // get List Cart of User
 const getListCart = (req, res) => {
   return res.status(200).send(req.user.cart);
@@ -102,6 +114,7 @@ const UserController = {
   getListCart,
   createAdmin,
   addBookToCart,
+  checkAuth,
 };
 
 export default UserController;

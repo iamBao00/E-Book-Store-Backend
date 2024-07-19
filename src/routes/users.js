@@ -28,6 +28,13 @@ UserRouter.post(
   UserController.createAdmin
 );
 
+// check logged in
+UserRouter.get(
+  "/check-auth",
+  AuthMiddleware.ensureAuthenticated,
+  UserController.checkAuth
+);
+
 // Check Cart
 UserRouter.get(
   "/cart",
