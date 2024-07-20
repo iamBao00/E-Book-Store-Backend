@@ -9,10 +9,27 @@ import session from "express-session";
 import cookieParser from "cookie-parser";
 import passport from "passport";
 import cors from "cors";
+import swaggerJsdoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
 
 const PORT = process.env.PORT || 3001;
 
 const app = express();
+
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "BookStore API",
+      version: "1.0.0",
+    },
+  },
+  servers: [{ url: "http://localhost:3000" }],
+  apis: ["./src/routes*.js"], // files containing annotations as above
+};
+
+const swaggerSpec = swaggerJsdoc(options);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(
   cors({

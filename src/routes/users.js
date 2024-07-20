@@ -9,11 +9,6 @@ const UserRouter = express.Router();
 UserRouter.post("/register", UserController.createUser);
 
 // Đăng nhập User
-// UserRouter.post(
-//   "/login",
-//   passport.authenticate("local", { session: true }),
-//   UserController.loginUser
-// );
 UserRouter.post(
   "/login",
   AuthMiddleware.loginMiddleware,

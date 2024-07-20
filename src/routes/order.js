@@ -1,9 +1,6 @@
 import express from "express";
-import UserController from "../controller/UserController.js";
-
 import "../strategies/local-strategy.js";
 import AuthMiddleware from "../middleware/authMiddleware.js";
-import { Order } from "../database/Order.js";
 import OrderController from "../controller/OrderController.js";
 const OrderRouter = express.Router();
 
@@ -19,9 +16,23 @@ OrderRouter.get(
   OrderController.getOrderHistory
 );
 
+OrderRouter.get(
+  "/get-orders",
+  AuthMiddleware.ensureAuthenticated,
+  AuthMiddleware.ensureRole("admin"),
+  OrderController.getOrders
+);
+
 OrderRouter.patch(
   "/cancel/:orderId",
   AuthMiddleware.ensureAuthenticated,
   OrderController.cancelOrder
+);
+
+OrderRouter.patch(
+  "/update-status/:orderId",
+  AuthMiddleware.ensureAuthenticated,
+  AuthMiddleware.ensureRole("admin"),
+  OrderController.updateOrderStatus
 );
 export default OrderRouter;

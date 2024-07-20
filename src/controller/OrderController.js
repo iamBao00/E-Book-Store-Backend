@@ -92,10 +92,78 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+const getOrders = async (req, res) => {
+  try {
+    // Find all orders
+    const orders = await Order.find() // Ensure you're querying all orders
+      .populate("orderDetails.book_id") // Populate book details if needed
+      .populate("user_id") // Populate user details if needed
+      .exec(); // Execute the query
+
+    // Check if orders are found
+    if (orders.length === 0) {
+      return res.status(404).json({ message: "No orders found." });
+    }
+
+    // Send the orders back in the response
+    res.status(200).json(orders);
+  } catch (err) {
+    console.error("Error fetching order history:", err);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+const updateOrderStatus = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const status = req.body.status;
+    console.log("Requested Status:", status); // Debugging: Check the status value
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).send({ msg: "Order not found" });
+    }
+
+    // Implement status update rules
+    switch (order.status) {
+      case "Cancelled":
+        return res.status(400).send({ msg: "Cannot update a cancelled order" });
+      case "Processing":
+        if (status !== "Cancelled" && status !== "Delivering") {
+          return res
+            .status(400)
+            .send({ msg: "Invalid status update for Processing order" });
+        }
+        break;
+      case "Delivering":
+        if (status !== "Delivered") {
+          return res
+            .status(400)
+            .send({ msg: "Invalid status update for Delivering order" });
+        }
+        break;
+      case "Delivered":
+        return res.status(400).send({ msg: "Cannot update a delivered order" });
+      default:
+        return res.status(400).send({ msg: "Invalid order status" });
+    }
+
+    // Update the order status
+    order.status = status;
+    await order.save();
+    return res.status(200).json({ order, message: "Status Updated" });
+  } catch (error) {
+    console.error("Status Update Error:", error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 const OrderController = {
   placeOrder,
   getOrderHistory,
   cancelOrder,
+  getOrders,
+  updateOrderStatus,
 };
 
 export default OrderController;
