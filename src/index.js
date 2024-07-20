@@ -3,6 +3,7 @@ import "dotenv/config";
 import mongoose from "mongoose";
 import UserRouter from "./routes/users.js";
 import CategoryRouter from "./routes/category.js";
+import OrderRouter from "./routes/order.js";
 import BookRouter from "./routes/book.js";
 import session from "express-session";
 import cookieParser from "cookie-parser";
@@ -47,6 +48,7 @@ app.use(passport.session());
 app.use("/users", UserRouter);
 app.use("/category", CategoryRouter);
 app.use("/book", BookRouter);
+app.use("/order", OrderRouter);
 
 //App
 app.listen(PORT, () => {

@@ -42,7 +42,14 @@ UserRouter.get(
   UserController.checkAuthAdmin
 );
 
-// Check Cart
+// get address
+UserRouter.get(
+  "/get-address",
+  AuthMiddleware.ensureAuthenticated,
+  UserController.getAddress
+);
+
+// Get list items in Cart
 UserRouter.get(
   "/cart",
   AuthMiddleware.ensureAuthenticated,

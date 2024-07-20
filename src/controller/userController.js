@@ -192,6 +192,10 @@ const updateQuantity = async (req, res) => {
   }
 };
 
+const getAddress = async (req, res) => {
+  return res.status(200).send(req.user.address);
+};
+
 const UserController = {
   createUser,
   loginUser,
@@ -202,6 +206,7 @@ const UserController = {
   checkAuthAdmin,
   removeBookFromCart,
   updateQuantity,
+  getAddress,
 };
 
 export default UserController;
