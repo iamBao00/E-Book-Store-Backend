@@ -3,6 +3,7 @@ import UserController from "../controller/UserController.js";
 
 import "../strategies/local-strategy.js";
 import AuthMiddleware from "../middleware/authMiddleware.js";
+import { User } from "../database/User.js";
 const UserRouter = express.Router();
 
 // Đăng kí User
@@ -15,11 +16,14 @@ UserRouter.post(
   UserController.loginUser
 );
 
-// Create admin account (only for owner)
+// Logout
+UserRouter.post("/logout", UserController.logoutUser);
+
+// Create admin account (only for admin)
 UserRouter.post(
   "/createAdmin",
   AuthMiddleware.ensureAuthenticated,
-  AuthMiddleware.ensureRole("owner"),
+  AuthMiddleware.ensureRole("admin"),
   UserController.createAdmin
 );
 
@@ -70,6 +74,37 @@ UserRouter.patch(
   "/cart/quantity/:bookId",
   AuthMiddleware.ensureAuthenticated,
   UserController.updateQuantity
+);
+
+// Get user by id
+UserRouter.get(
+  "/info/:id",
+  AuthMiddleware.ensureAuthenticated,
+  async (req, res) => {
+    const userId = req.params.id; // Truy xuất userId từ params
+    try {
+      const user = await User.findById(userId); // Sử dụng await để chờ kết quả trả về
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.status(200).json({
+        message: "Get user info successfully",
+        user: {
+          _id: user._id,
+          email: user.email,
+          username: user.username,
+          role: user.role, // Trả về role của người dùng
+          address: user.address,
+          avatar: user.avatar,
+          phone: user.phone,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error", error });
+    }
+  }
 );
 
 export default UserRouter;

@@ -14,15 +14,17 @@ const AddressSchema = new mongoose.Schema({
 });
 
 // Order Schema
-const OrderSchema = new mongoose.Schema({
-  amount: Number,
-  transactionId: String,
-  status: { type: String, default: "Processing" }, // Processing, Delivering, Delivered, Cancelled
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  orderDetails: [OrderDetailSchema], // Nhúng order detail vào order
-  address: AddressSchema,
-  paymentMethod: { type: String, default: "cash" },
-  date: { type: Date, default: Date.now }, // Added date field
-});
+const OrderSchema = new mongoose.Schema(
+  {
+    amount: Number,
+    transactionId: String,
+    status: { type: String, default: "Processing" }, // Processing, Delivering, Delivered, Cancelled
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    orderDetails: [OrderDetailSchema], // Nhúng order detail vào order
+    address: AddressSchema,
+    paymentMethod: { type: String, default: "cash" },
+  },
+  { timestamps: true }
+);
 
 export const Order = mongoose.model("Order", OrderSchema);

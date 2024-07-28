@@ -112,102 +112,115 @@ const deleteBook = async (req, res) => {
   }
 };
 
-const getBookById = async (req, res) => {
+export const getBookById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const book = await Book.findById(id);
-    if (!book) return res.status(400).send({ msg: "Book Id not found" });
-
-    // Lấy tên loại
-    const category = await Category.findById(book.category_id);
-
-    if (category) {
-      // Sao chép đối tượng book và thêm thuộc tính category_name
-      const bookWithCategoryName = {
-        ...book._doc, // ._doc để lấy dữ liệu thô của book
-        category_name: category.name,
-      };
-      res.status(200).send(bookWithCategoryName);
-    } else {
-      res.status(200).send(book);
+    const book = await Book.findById(req.params.id).populate({
+      path: "reviews.user_id",
+      select: "username",
+    });
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
     }
+    res.status(200).json(book);
   } catch (error) {
-    res.status(500).send({ msg: error.message });
+    res.status(500).json({ message: error.message });
+  }
+};
+// Phương thức thêm review cho sách
+const addReview = async (req, res) => {
+  const { bookId } = req.params;
+  const { rating, comment } = req.body;
+  const userId = req.user._id;
+  try {
+    const book = await Book.findById(bookId);
+
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+
+    book.reviews.push({
+      rating,
+      comment,
+      user_id: userId,
+    });
+
+    await book.save();
+
+    res.status(200).json({ message: "Review added successfully", book });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
   }
 };
 
-// // Phương thức thêm review cho sách
-// const addReview = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { rating, comment, user_id } = req.body;
+// Phương thức cập nhật review của sách
+const editReview = async (req, res) => {
+  const { bookId } = req.params;
+  const { rating, comment } = req.body;
+  const userId = req.user._id;
 
-//     const review = {
-//       rating,
-//       comment,
-//       user_id,
-//     };
+  try {
+    const book = await Book.findById(bookId);
 
-//     await Book.findByIdAndUpdate(
-//       id,
-//       { $push: { reviews: review } },
-//       { new: true }
-//     );
+    if (!book) {
+      console.log("Book not found");
+      return res.status(404).json({ message: "Book not found" });
+    }
 
-//     res.status(201).send("Review added successfully");
-//   } catch (error) {
-//     res.status(500).send({ msg: error.message });
-//   }
-// };
+    const review = book.reviews.find(
+      (r) => r.user_id.toString() === userId.toString()
+    );
 
-// // Phương thức cập nhật review của sách
-// const updateReview = async (req, res) => {
-//   try {
-//     const { bookId, reviewId } = req.params;
-//     const { rating, comment } = req.body;
+    if (!review) {
+      console.log("Review not found for user:", userId);
+      return res.status(404).json({ message: "Review not found" });
+    }
 
-//     const updatedBook = await Book.findOneAndUpdate(
-//       { _id: bookId, "reviews._id": reviewId },
-//       {
-//         $set: {
-//           "reviews.$.rating": rating,
-//           "reviews.$.comment": comment,
-//           "reviews.$.review_date": Date.now(), // Cập nhật ngày khi cập nhật review
-//         },
-//       },
-//       { new: true }
-//     );
+    // Update the review
+    review.rating = rating;
+    review.comment = comment;
 
-//     if (!updatedBook) {
-//       return res.status(404).send({ msg: "Review not found" });
-//     }
+    await book.save();
 
-//     res.status(200).send("Review updated successfully");
-//   } catch (error) {
-//     res.status(500).send({ msg: error.message });
-//   }
-// };
+    res.status(200).json({ message: "Review updated successfully", book });
+  } catch (error) {
+    console.error("Error updating review:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
 
-// // Phương thức xóa review của sách
-// const deleteReview = async (req, res) => {
-//   try {
-//     const { bookId, reviewId } = req.params;
+// Phương thức xóa review của sách
+const deleteReview = async (req, res) => {
+  const { bookId } = req.params;
+  const userId = req.user._id;
 
-//     const updatedBook = await Book.findByIdAndUpdate(
-//       bookId,
-//       { $pull: { reviews: { _id: reviewId } } },
-//       { new: true }
-//     );
+  try {
+    const book = await Book.findById(bookId);
 
-//     if (!updatedBook) {
-//       return res.status(404).send({ msg: "Review not found" });
-//     }
+    if (!book) {
+      console.log("Book not found");
+      return res.status(404).json({ message: "Book not found" });
+    }
 
-//     res.status(200).send("Review deleted successfully");
-//   } catch (error) {
-//     res.status(500).send({ msg: error.message });
-//   }
-// };
+    const reviewIndex = book.reviews.findIndex(
+      (r) => r.user_id.toString() === userId.toString()
+    );
+
+    if (reviewIndex === -1) {
+      console.log("Review not found for user:", userId);
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    // Remove the review from the reviews array
+    book.reviews.splice(reviewIndex, 1);
+
+    await book.save();
+
+    res.status(200).json({ message: "Review deleted successfully", book });
+  } catch (error) {
+    console.error("Error deleting review:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
 
 const BookController = {
   addBook,
@@ -215,9 +228,9 @@ const BookController = {
   updateBook,
   deleteBook,
   getBookById,
-  //   addReview,
-  //   updateReview,
-  //   deleteReview,
+  addReview,
+  editReview,
+  deleteReview,
 };
 
 export default BookController;

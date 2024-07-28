@@ -13,16 +13,19 @@ const CartDetailSchema = new mongoose.Schema({
   book_id: { type: mongoose.Schema.Types.ObjectId, ref: "Book" },
 });
 
-const UserSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, default: "user" },
-  phone: { type: String },
-  avatar: { type: String },
-  address: [AddressSchema],
-  cart: [CartDetailSchema],
-});
+const UserSchema = new mongoose.Schema(
+  {
+    username: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, default: "user" },
+    phone: { type: String, default: "" },
+    avatar: { type: String },
+    address: [AddressSchema],
+    cart: [CartDetailSchema],
+  },
+  { timestamps: true }
+);
 
 UserSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
