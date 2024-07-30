@@ -67,6 +67,8 @@ app.use("/category", CategoryRouter);
 app.use("/book", BookRouter);
 app.use("/order", OrderRouter);
 
+console.log(process.env.CLIENT_ID);
+
 //App
 app.listen(PORT, () => {
   console.log(`App is running at Port: ${PORT}`);

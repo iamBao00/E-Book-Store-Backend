@@ -17,6 +17,7 @@ const BookSchema = new mongoose.Schema(
     publisher: String,
     description: String,
     stock_quantity: { type: Number, default: 0 },
+    sold: { type: Number, default: 0 },
     image: String,
     category_id: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
     is_active: { type: Boolean, default: true },

@@ -23,6 +23,7 @@ const OrderSchema = new mongoose.Schema(
     orderDetails: [OrderDetailSchema], // Nhúng order detail vào order
     address: AddressSchema,
     paymentMethod: { type: String, default: "cash" },
+    isPaid: { type: Boolean, default: "false" },
   },
   { timestamps: true }
 );

@@ -5,7 +5,8 @@ const placeOrder = async (req, res) => {
   try {
     const userId = req.user._id; // Assumes req.user contains authenticated user information
     const { paymentMethod, address } = req.body;
-
+    let isPaid = false;
+    if (paymentMethod === "paypal") isPaid = true;
     // Fetch user to get cart items
     const user = await User.findById(userId).populate("cart.book_id");
 
@@ -33,6 +34,7 @@ const placeOrder = async (req, res) => {
       orderDetails,
       address,
       paymentMethod,
+      isPaid,
     });
 
     // Save order to database
