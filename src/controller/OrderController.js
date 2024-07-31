@@ -1,5 +1,6 @@
 import { Order } from "../database/Order.js";
 import { User } from "../database/User.js";
+import { Book } from "../database/Book.js";
 // Function to place an order
 const placeOrder = async (req, res) => {
   try {
@@ -7,11 +8,21 @@ const placeOrder = async (req, res) => {
     const { paymentMethod, address } = req.body;
     let isPaid = false;
     if (paymentMethod === "paypal") isPaid = true;
+
     // Fetch user to get cart items
     const user = await User.findById(userId).populate("cart.book_id");
 
     if (!user || user.cart.length === 0) {
-      return res.status(400).json({ message: "Cart is empty" });
+      return res.status(401).json({ message: "Cart is empty" });
+    }
+
+    // Check stock quantities
+    for (let item of user.cart) {
+      if (item.book_id.stock_quantity < item.quantity) {
+        return res.status(400).json({
+          message: `Not enough stock for book: ${item.book_id.title}`,
+        });
+      }
     }
 
     // Calculate total amount
@@ -40,6 +51,14 @@ const placeOrder = async (req, res) => {
     // Save order to database
     const savedOrder = await newOrder.save();
 
+    // Update stock quantities and sold counts
+    for (let item of user.cart) {
+      const book = await Book.findById(item.book_id._id);
+      book.stock_quantity -= item.quantity;
+      book.sold += item.quantity;
+      await book.save();
+    }
+
     // Clear user's cart
     user.cart = [];
     await user.save();
@@ -47,7 +66,7 @@ const placeOrder = async (req, res) => {
     res.status(201).json(savedOrder);
   } catch (error) {
     console.error("Error placing order:", error);
-    res.status(500).json({ message: error });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -80,17 +99,28 @@ const cancelOrder = async (req, res) => {
   try {
     const user_id = req.user._id;
     const orderId = req.params.orderId;
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(orderId).populate(
+      "orderDetails.book_id"
+    );
 
     if (order.status !== "Processing") {
       return res.status(400).send({ msg: "Can not cancel this order" });
     }
+
+    // Update the stock quantities and sold counts
+    for (let item of order.orderDetails) {
+      const book = await Book.findById(item.book_id._id);
+      book.stock_quantity += item.quantity;
+      book.sold -= item.quantity;
+      await book.save();
+    }
+
     order.status = "Cancelled";
     await order.save();
     return res.status(200).json({ order, message: "Order was canceled" });
   } catch (error) {
-    console.error("Error cancel order:", err);
-    return res.status(500).json({ message: err });
+    console.error("Error cancel order:", error);
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -135,6 +165,16 @@ const updateOrderStatus = async (req, res) => {
           return res
             .status(400)
             .send({ msg: "Invalid status update for Processing order" });
+        }
+        if (status === "Cancelled") {
+          // Update the stock quantities and sold counts if the order is cancelled
+          await order.populate("orderDetails.book_id");
+          for (let item of order.orderDetails) {
+            const book = await Book.findById(item.book_id._id);
+            book.stock_quantity += item.quantity;
+            book.sold -= item.quantity;
+            await book.save();
+          }
         }
         break;
       case "Delivering":
