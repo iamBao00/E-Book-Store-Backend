@@ -10,9 +10,9 @@ const createCategory = async (req, res) => {
       return res.status(400).send({ msg: "This category name is existed" });
     const category = new Category({ name });
     await category.save();
-    res.status(201).send("Category added successfully");
+    res.status(201).json({ category });
   } catch (error) {
-    res.status(500).send({ msg: error.message });
+    res.status(500).json({ msg: error.message });
   }
 };
 
@@ -29,9 +29,9 @@ const deleteById = async (req, res) => {
     // Nếu tồn tại, thực hiện xóa
     await Category.findByIdAndDelete(id);
 
-    res.status(200).send("Category deleted successfully");
+    res.status(200).json("Category deleted successfully");
   } catch (error) {
-    res.status(500).send({ msg: error.message });
+    res.status(500).json({ msg: error.message });
   }
 };
 
@@ -47,8 +47,24 @@ const getAllCategories = async (req, res) => {
 const getById = async (req, res) => {
   try {
     const categoryId = req.params.id;
-    const Cate = await Category.findById(categoryId);
-    res.status(200).json(Cate);
+    const category = await Category.findById(categoryId);
+    res.status(200).json(category);
+  } catch (error) {
+    res.status(500).json({ msg: error.message });
+  }
+};
+
+const updateCategory = async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+    const { name: categoryName } = req.body;
+
+    const category = await Category.findById(categoryId);
+
+    category.name = categoryName;
+
+    await category.save();
+    res.status(200).json(category);
   } catch (error) {
     res.status(500).json({ msg: error.message });
   }
@@ -59,6 +75,7 @@ const CategoryController = {
   deleteById,
   getAllCategories,
   getById,
+  updateCategory,
 };
 
 export default CategoryController;
