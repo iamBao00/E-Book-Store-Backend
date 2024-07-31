@@ -10,5 +10,6 @@ const CategoryRouter = express.Router();
 CategoryRouter.post("/add", CategoryController.createCategory);
 CategoryRouter.get("/get-all", CategoryController.getAllCategories);
 CategoryRouter.delete("/delete/:id", CategoryController.deleteById);
+CategoryRouter.get("/getById/:id", CategoryController.getById);
 
 export default CategoryRouter;

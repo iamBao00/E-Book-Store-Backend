@@ -40,7 +40,17 @@ const getAllCategories = async (req, res) => {
     const categories = await Category.find();
     res.status(200).json(categories);
   } catch (error) {
-    res.status(500).send({ msg: error.message });
+    res.status(500).json({ msg: error.message });
+  }
+};
+
+const getById = async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+    const Cate = await Category.findById(categoryId);
+    res.status(200).json(Cate);
+  } catch (error) {
+    res.status(500).json({ msg: error.message });
   }
 };
 
@@ -48,6 +58,7 @@ const CategoryController = {
   createCategory,
   deleteById,
   getAllCategories,
+  getById,
 };
 
 export default CategoryController;

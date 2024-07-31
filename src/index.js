@@ -11,6 +11,8 @@ import passport from "passport";
 import cors from "cors";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+import cloudinary from "./config/cloudiaryConfig.js";
+import upload from "./config/multerConfig.js";
 
 const PORT = process.env.PORT || 3001;
 
@@ -66,6 +68,14 @@ app.use("/users", UserRouter);
 app.use("/category", CategoryRouter);
 app.use("/book", BookRouter);
 app.use("/order", OrderRouter);
+
+app.use("/upload", upload.single("image"), async (req, res) => {
+  try {
+    res.status(200).json({ imageUrl: req.file.path });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 console.log(process.env.CLIENT_ID);
 
