@@ -7,6 +7,7 @@ const BookRouter = express.Router();
 
 BookRouter.post("/add", BookController.addBook);
 BookRouter.get("/get-all", BookController.getAllBooks);
+BookRouter.get("/get-all-active", BookController.getAllActiveBooks);
 BookRouter.patch("/update/:id", BookController.updateBook);
 BookRouter.delete("/delete/:id", BookController.deleteBook);
 BookRouter.get("/getById/:id", BookController.getBookById);

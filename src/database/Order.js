@@ -17,12 +17,12 @@ const AddressSchema = new mongoose.Schema({
 const OrderSchema = new mongoose.Schema(
   {
     amount: Number,
-    transactionId: String,
     status: { type: String, default: "Processing" }, // Processing, Delivering, Delivered, Cancelled
     user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     orderDetails: [OrderDetailSchema], // Nhúng order detail vào order
     address: AddressSchema,
     paymentMethod: { type: String, default: "cash" },
+    phoneNumber: String,
     isPaid: { type: Boolean, default: "false" },
   },
   { timestamps: true }

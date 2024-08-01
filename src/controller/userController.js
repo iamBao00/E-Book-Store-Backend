@@ -98,7 +98,6 @@ const getListCart = (req, res) => {
   return res.status(200).send(req.user.cart);
 };
 
-// get List Cart of User
 const addBookToCart = async (req, res) => {
   try {
     const { bookId, quantity = 1 } = req.body;

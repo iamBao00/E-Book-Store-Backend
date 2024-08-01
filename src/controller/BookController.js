@@ -23,22 +23,50 @@ const addBook = async (req, res) => {
       description,
       stock_quantity,
       image,
-      category_id,
       is_active,
     });
+
+    if (category_id !== "") newBook.category_id = category_id;
 
     await newBook.save();
     res.status(201).json({ msg: "Book added successfully" });
   } catch (error) {
-    res.status(500).send({ msg: error.message });
+    res.status(500).json({ msg: error.message });
   }
 };
 
 // Phương thức lấy tất cả sách
 const getAllBooks = async (req, res) => {
   try {
-    const books = await Book.find();
+    // Find all books and sort them by createdAt in descending order
+    const books = await Book.find().sort({ createdAt: -1 });
 
+    // Map over the books to include the category name
+    const booksWithCategoryName = await Promise.all(
+      books.map(async (book) => {
+        const category = await Category.findById(book.category_id).select(
+          "name"
+        );
+        return {
+          ...book.toObject(),
+          category_name: category ? category.name : "Unknown",
+        };
+      })
+    );
+
+    res.status(200).json(booksWithCategoryName);
+  } catch (error) {
+    res.status(500).send({ msg: error.message });
+  }
+};
+
+// Method to get all active books
+const getAllActiveBooks = async (req, res) => {
+  try {
+    // Find all books with is_active = true and sort them by createdAt in descending order
+    const books = await Book.find({ is_active: true }).sort({ createdAt: -1 });
+
+    // Map over the books to include the category name
     const booksWithCategoryName = await Promise.all(
       books.map(async (book) => {
         const category = await Category.findById(book.category_id).select(
@@ -103,12 +131,30 @@ const deleteBook = async (req, res) => {
   try {
     const { id } = req.params;
     console.log(id);
-    const book = await Book.findOneAndDelete({ _id: id });
-    console.log(book);
-    if (!book) return res.status(400).send("BookId not found");
-    return res.status(200).send("Book deleted successfully");
+
+    // Find the book without deleting
+    const book = await Book.findById(id);
+
+    // If the book was not found, return an error response
+    if (!book) {
+      return res.status(400).json({ msg: "Book ID not found" });
+    }
+
+    // If the book has been ordered (sold >= 1), return an error response
+    if (book.sold >= 1) {
+      return res
+        .status(400)
+        .json({ msg: "This book has been ordered, can't be deleted!" });
+    }
+
+    // Delete the book if all conditions are met
+    await Book.findByIdAndDelete(id);
+
+    // Return success response
+    return res.status(200).json({ msg: "Book deleted successfully" });
   } catch (error) {
-    res.status(500).send({ msg: error.message });
+    // Handle server errors
+    res.status(500).json({ msg: error.message });
   }
 };
 
@@ -225,6 +271,7 @@ const deleteReview = async (req, res) => {
 const BookController = {
   addBook,
   getAllBooks,
+  getAllActiveBooks,
   updateBook,
   deleteBook,
   getBookById,

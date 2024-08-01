@@ -5,7 +5,7 @@ import { Book } from "../database/Book.js";
 const placeOrder = async (req, res) => {
   try {
     const userId = req.user._id; // Assumes req.user contains authenticated user information
-    const { paymentMethod, address } = req.body;
+    const { paymentMethod, address, phoneNumber } = req.body;
     let isPaid = false;
     if (paymentMethod === "paypal") isPaid = true;
 
@@ -45,6 +45,7 @@ const placeOrder = async (req, res) => {
       orderDetails,
       address,
       paymentMethod,
+      phoneNumber,
       isPaid,
     });
 
