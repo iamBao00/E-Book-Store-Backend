@@ -23,6 +23,8 @@ const UserSchema = new mongoose.Schema(
     avatar: { type: String },
     address: [AddressSchema],
     cart: [CartDetailSchema],
+    resetPasswordToken: { type: String, default: undefined },
+    resetPasswordExpires: { type: Date, default: undefined },
   },
   { timestamps: true }
 );

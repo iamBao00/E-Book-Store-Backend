@@ -1,6 +1,7 @@
 import express from "express";
 import UserController from "../controller/UserController.js";
-
+import { sendEmail } from "../config/maile.js";
+import crypto from "crypto";
 import "../strategies/local-strategy.js";
 import AuthMiddleware from "../middleware/authMiddleware.js";
 import { User } from "../database/User.js";
@@ -145,5 +146,78 @@ UserRouter.put(
     }
   }
 );
+
+UserRouter.post("/test-send-email", async (req, res) => {
+  const { to, subject, text } = req.body;
+
+  try {
+    await sendEmail(to, subject, text);
+    res.status(200).json({ message: "Email sent successfully" });
+  } catch (error) {
+    console.error("Error in /test-send-email:", error);
+    res.status(500).json({ message: "Failed to send email" });
+  }
+});
+
+UserRouter.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User with this email does not exist." });
+    }
+
+    // Tạo token reset mật khẩu
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // Token hết hạn sau 1 giờ
+    console.log(user);
+    await user.save();
+
+    // Gửi email với link reset mật khẩu
+    const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
+    const message = `You requested a password reset. Click the link below to reset your password:\n\n${resetUrl}`;
+
+    await sendEmail(user.email, "Password Reset Request", message);
+
+    res
+      .status(200)
+      .json({ message: "Password reset link sent to your email." });
+  } catch (error) {
+    console.error("Error in /forgot-password:", error); // Log lỗi ra console
+    res.status(500).json({ message: "An error occurred." });
+  }
+});
+
+UserRouter.post("/reset-password/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "Password reset token is invalid or has expired." });
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Password has been reset successfully." });
+  } catch (error) {
+    console.error("Error in /reset-password/:token:", error); // Log lỗi ra console
+    res.status(500).json({ message: "An error occurred." });
+  }
+});
 
 export default UserRouter;
