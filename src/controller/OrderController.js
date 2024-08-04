@@ -127,10 +127,18 @@ const cancelOrder = async (req, res) => {
 
 const getOrders = async (req, res) => {
   try {
-    // Find all orders
-    const orders = await Order.find() // Ensure you're querying all orders
-      .populate("orderDetails.book_id") // Populate book details if needed
-      .populate("user_id") // Populate user details if needed
+    const { status } = req.query;
+
+    // Build the query object
+    let query = {};
+    if (status) {
+      query.status = status;
+    }
+
+    // Find orders based on the query
+    const orders = await Order.find(query)
+      .populate("orderDetails.book_id") // Populate book details
+      .populate("user_id") // Populate user details
       .exec(); // Execute the query
 
     // Check if orders are found
@@ -141,7 +149,7 @@ const getOrders = async (req, res) => {
     // Send the orders back in the response
     res.status(200).json(orders);
   } catch (err) {
-    console.error("Error fetching order history:", err);
+    console.error("Error fetching orders:", err);
     res.status(500).json({ message: "Internal server error." });
   }
 };
