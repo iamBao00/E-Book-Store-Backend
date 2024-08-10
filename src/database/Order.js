@@ -28,4 +28,11 @@ const OrderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Middleware to set isPaid to true when status is 'Delivered'
+OrderSchema.pre("save", function (next) {
+  if (this.status === "Delivered") {
+    this.isPaid = true;
+  }
+  next();
+});
 export const Order = mongoose.model("Order", OrderSchema);
