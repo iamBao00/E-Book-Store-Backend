@@ -34,4 +34,17 @@ BookRouter.delete(
   BookController.deleteReview
 );
 
+// BookRouter.js
+BookRouter.get("/get-best-seller", async (req, res) => {
+  try {
+    // Fetch the top 10 best-selling books, sorted by 'sold' in descending order
+    const bestSellers = await Book.find().sort({ sold: -1 }).limit(10).exec();
+
+    res.status(200).json(bestSellers);
+  } catch (error) {
+    console.error("Error fetching best-sellers:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 export default BookRouter;

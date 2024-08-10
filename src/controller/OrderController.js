@@ -74,11 +74,13 @@ const placeOrder = async (req, res) => {
 const getOrderHistory = async (req, res) => {
   const user_id = req.user._id;
   console.log(user_id);
+
   try {
-    // Find orders by user_id
+    // Find orders by user_id and sort by createdAt in descending order
     const orders = await Order.find({ user_id })
       .populate("orderDetails.book_id") // Optionally populate book details if needed
       .populate("user_id") // Optionally populate user details if needed
+      .sort({ createdAt: -1 }) // Sort by createdAt in descending order
       .exec();
 
     // Check if orders are found
@@ -135,10 +137,11 @@ const getOrders = async (req, res) => {
       query.status = status;
     }
 
-    // Find orders based on the query
+    // Find orders based on the query and sort by createdAt in descending order
     const orders = await Order.find(query)
       .populate("orderDetails.book_id") // Populate book details
       .populate("user_id") // Populate user details
+      .sort({ createdAt: -1 }) // Sort by createdAt in descending order
       .exec(); // Execute the query
 
     // Check if orders are found
